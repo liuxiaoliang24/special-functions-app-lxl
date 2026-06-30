@@ -122,7 +122,7 @@ def plot_multi(func_type, orders, m=0, bessel_type='J', x_range=None):
     ax.axhline(0, color='gray', linewidth=0.5)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
-    ax.set_title('多阶对比')
+    ax.set_title('Multi-order Comparison Plot')
     ax.legend()
     ax.grid(True, alpha=0.3)
     fig.tight_layout()
@@ -167,7 +167,7 @@ def create_gif(func_type, max_order, m=0, bessel_type='J', x_range=None,
     
     def animate(i):
         order = orders[i]
-        ax.set_title(f'阶数: {order}')
+        ax.set_title(f'degree: {order}')
         if func_type in ('legendre', 'associated_legendre'):
             y = compute_function(func_type, order, m, 0, None, x)
             lbl = get_func_label(func_type, {'l': order, 'm': m, 'nu': 0, 'bessel_type': None})

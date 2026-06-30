@@ -195,40 +195,39 @@ def create_expansion_gif(func_type, f, max_order, domain, **kwargs):
     
     fig, ax = plt.subplots(figsize=(8, 5))
     
-    # 预计算 y 范围
+    # Precompute y range
     y_min = min(np.min(f_vals), 0)
     y_max = max(np.max(f_vals), 0)
     margin = 0.1 * (y_max - y_min) if y_max != y_min else 0.5
     ax.set_ylim(y_min - margin, y_max + margin)
     
-    ax.plot(x, f_vals, 'k--', linewidth=1, alpha=0.7, label='目标函数 f(x)')
+    ax.plot(x, f_vals, 'k--', linewidth=1, alpha=0.7, label='Target function f(x)')
     ax.axhline(0, color='gray', linewidth=0.5)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.grid(True, alpha=0.3)
     ax.legend(loc='upper right')
     
-    # 根据类型确定阶数序列
+    # Determine order sequence based on function type
     if func_type == 'legendre':
         orders = list(range(max_order + 1))
     elif func_type == 'associated_legendre':
         m = kwargs.get('m', 0)
         lmin = abs(m)
         if max_order < lmin:
-            raise ValueError("最大阶数不能小于 |m|")
+            raise ValueError("Maximum order cannot be less than |m|")
         orders = list(range(lmin, max_order + 1))
     elif func_type == 'bessel':
-        orders = list(range(1, max_order + 1))  # 项数从1开始
+        orders = list(range(1, max_order + 1))  # term count starts from 1
     else:
-        raise ValueError("未知函数类型")
+        raise ValueError("Unknown function type")
     
     colors = plt.cm.viridis(np.linspace(0, 1, len(orders)))
-    approx_line, = ax.plot([], [], lw=2, color='red', label='当前近似')
+    approx_line, = ax.plot([], [], lw=2, color='red', label='Current approximation')
     
     def animate(i):
         if func_type == 'legendre':
             current_order = orders[i]
-            # 重新计算到 current_order 的系数和近似函数
             coeffs, approx = legendre_expand(f, current_order, domain)
         elif func_type == 'associated_legendre':
             current_order = orders[i]
@@ -239,12 +238,14 @@ def create_expansion_gif(func_type, f, max_order, domain, **kwargs):
         
         y_approx = approx(x)
         approx_line.set_data(x, y_approx)
-        ax.set_title(f'逐阶近似 (当前阶/项数: {orders[i]})')
-        # 更新图例
-        ax.legend([f'目标函数 f(x)', f'近似 (阶={current_order if func_type!="bessel" else current_terms})'])
+        ax.set_title(f'Order-by-order approximation (current: {orders[i]})')
+        # Update legend
+        current_label = f'Approximation (order={current_order if func_type != "bessel" else current_terms})'
+        ax.legend(['Target function f(x)', current_label])
         return approx_line,
     
     ani = FuncAnimation(fig, animate, frames=len(orders), interval=800, repeat=True)
+    # ... (remainder of the function unchanged)
     
     # 保存到临时文件
     with tempfile.NamedTemporaryFile(suffix='.gif', delete=False) as tmpfile:
