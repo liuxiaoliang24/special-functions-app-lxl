@@ -6,7 +6,7 @@
 
 import numpy as np
 from math import factorial
-from scipy.special import gamma  # 仅用于贝塞尔级数中的 Gamma 函数
+from scipy.special import gamma, yv # 仅用于贝塞尔级数中的 Gamma 函数
 
 # ======================== 勒让德多项式 ========================
 def legendre(l, x):
@@ -131,38 +131,20 @@ def bessel_J(nu, x, max_terms=200):
     return result
 
 
-def bessel_Y(nu, x, max_terms=200):
+def bessel_Y(nu, x):
     """
     第二类贝塞尔函数（诺依曼函数）Y_ν(x)
     参数：
         nu : float, 阶数
         x  : array_like
-        max_terms : int
     返回：
         Y : ndarray
     算法：
-        对于非整数 ν，使用关系式
-            Y_ν = (J_ν cos(νπ) - J_{-ν}) / sin(νπ)
-        对于整数 ν，该式分母为 0，采用极限近似：用 ν' = ν + 1e-8 代替。
-        此近似在工程范围内精度可接受，且避免了复杂的级数展开。
-        注：也可通过递推精确计算整数阶，但本模块为演示目的，采用近似方案。
+        直接调用 scipy.special.yv，确保整数阶与非整数阶均准确稳定。
     """
     nu = float(nu)
     x = np.asarray(x, dtype=float)
-    
-    # 判断是否为整数（允许浮点误差）
-    if abs(nu - round(nu)) < 1e-12:
-        # 整数阶，用微小偏移量避免奇点
-        eps = 1e-8
-        nu_shifted = nu + eps
-        J_nu = bessel_J(nu_shifted, x, max_terms)
-        J_minus_nu = bessel_J(-nu_shifted, x, max_terms)
-        Y = (J_nu * np.cos(nu_shifted * np.pi) - J_minus_nu) / np.sin(nu_shifted * np.pi)
-    else:
-        J_nu = bessel_J(nu, x, max_terms)
-        J_minus_nu = bessel_J(-nu, x, max_terms)
-        Y = (J_nu * np.cos(nu * np.pi) - J_minus_nu) / np.sin(nu * np.pi)
-    return Y
+    return yv(nu, x)
 
 
 def bessel_H(nu, x, kind=1, max_terms=200):
